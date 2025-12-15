@@ -13,16 +13,16 @@ let package = Package(
     products: [
         .library(
             name: "XXH3",
-            targets: ["XXH3"],
+            targets: ["XXH3"]
         )
     ],
     targets: [
         .target(
-            name: "XXH3",
+            name: "XXH3"
         ),
         .testTarget(
             name: "XXH3Tests",
-            dependencies: ["XXH3"],
+            dependencies: ["XXH3"]
         ),
     ]
 )
