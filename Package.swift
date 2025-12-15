@@ -17,8 +17,15 @@ let package = Package(
         .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0")
     ],
     targets: [
-        .target(name: "XXH3"),
-        .testTarget(name: "XXH3Tests", dependencies: ["XXH3"]),
+        .target(
+            name: "XXH3"
+        ),
+        .testTarget(
+            name: "XXH3Tests",
+            dependencies: [
+                "XXH3"
+            ]
+        ),
         .executableTarget(
             name: "XXH3Benchmarks",
             dependencies: [
