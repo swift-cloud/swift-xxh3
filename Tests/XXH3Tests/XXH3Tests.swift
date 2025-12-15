@@ -188,12 +188,12 @@ import Testing
 
 @Test func xxh3DistributionQuality() throws {
     // Test that hash values are well-distributed for stripe selection
-    let stripeCount = 64
-    var stripeCounts = [Int](repeating: 0, count: stripeCount)
+    let stripeCount: UInt64 = 64
+    var stripeCounts = [Int](repeating: 0, count: Int(stripeCount))
 
     for i in 0..<10000 {
         let hash = XXH3.hash(i)
-        let stripe = Int(abs(hash) % Int64(stripeCount))
+        let stripe = Int(hash % stripeCount)
         stripeCounts[stripe] += 1
     }
 
@@ -210,7 +210,7 @@ import Testing
 @Test func xxh3SequenceInput() throws {
     // Test sequence-based input
     let bytes: [UInt8] = [0x01, 0x02, 0x03, 0x04, 0x05]
-    let sequenceResult: Int64 = XXH3.hash(bytes, count: bytes.count, seed: 0)
+    let sequenceResult: UInt64 = XXH3.hash(bytes, count: bytes.count, seed: 0)
     let arrayResult = XXH3.hash(bytes, count: bytes.count)
 
     #expect(sequenceResult == arrayResult)
@@ -231,7 +231,7 @@ import Testing
     // Basic performance test - just ensure it doesn't crash and runs quickly
     let testData: [UInt8] = Array(repeating: 0xAB, count: 1000)
 
-    var sum: Int64 = 0
+    var sum: UInt64 = 0
     for i in 0..<10000 {
         let hash = XXH3.hash(testData, count: testData.count, seed: UInt64(i))
         sum &+= hash
@@ -280,7 +280,7 @@ func xxh3ReferenceEmpty() throws {
     // XXH3_64bits("", 0) = 0x2D06800538D394C2
     let bytes: [UInt8] = []
     let result = XXH3.hash(bytes, count: 0, seed: 0)
-    let expected: Int64 = bitPattern(0x2D06_8005_38D3_94C2)
+    let expected: UInt64 = 0x2D06_8005_38D3_94C2
     #expect(result == expected, "Empty input: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -289,7 +289,7 @@ func xxh3Reference1Byte() throws {
     // XXH3_64bits with 1 byte of test pattern (1-3 byte range)
     let bytes = generateTestData(length: 1)
     let result = XXH3.hash(bytes, count: 1, seed: 0)
-    let expected: Int64 = bitPattern(0xC44B_DFF4_074E_ECDB)
+    let expected: UInt64 = 0xC44B_DFF4_074E_ECDB
     #expect(result == expected, "1 byte: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -298,7 +298,7 @@ func xxh3Reference6Bytes() throws {
     // XXH3_64bits with 6 bytes of test pattern (4-8 byte range)
     let bytes = generateTestData(length: 6)
     let result = XXH3.hash(bytes, count: 6, seed: 0)
-    let expected: Int64 = bitPattern(0x27B5_6A84_CD2D_7325)
+    let expected: UInt64 = 0x27B5_6A84_CD2D_7325
     #expect(result == expected, "6 bytes: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -307,7 +307,7 @@ func xxh3Reference12Bytes() throws {
     // XXH3_64bits with 12 bytes of test pattern (9-16 byte range)
     let bytes = generateTestData(length: 12)
     let result = XXH3.hash(bytes, count: 12, seed: 0)
-    let expected: Int64 = bitPattern(0xA713_DAF0_DFBB_77E7)
+    let expected: UInt64 = 0xA713_DAF0_DFBB_77E7
     #expect(result == expected, "12 bytes: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -316,7 +316,7 @@ func xxh3Reference24Bytes() throws {
     // XXH3_64bits with 24 bytes of test pattern (17-32 byte range)
     let bytes = generateTestData(length: 24)
     let result = XXH3.hash(bytes, count: 24, seed: 0)
-    let expected: Int64 = bitPattern(0xA3FE_70BF_9D35_10EB)
+    let expected: UInt64 = 0xA3FE_70BF_9D35_10EB
     #expect(result == expected, "24 bytes: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -325,7 +325,7 @@ func xxh3Reference48Bytes() throws {
     // XXH3_64bits with 48 bytes of test pattern (33-64 byte range)
     let bytes = generateTestData(length: 48)
     let result = XXH3.hash(bytes, count: 48, seed: 0)
-    let expected: Int64 = bitPattern(0x397D_A259_ECBA_1F11)
+    let expected: UInt64 = 0x397D_A259_ECBA_1F11
     #expect(result == expected, "48 bytes: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -334,7 +334,7 @@ func xxh3Reference80Bytes() throws {
     // XXH3_64bits with 80 bytes of test pattern (65-96 byte range)
     let bytes = generateTestData(length: 80)
     let result = XXH3.hash(bytes, count: 80, seed: 0)
-    let expected: Int64 = bitPattern(0xBCDE_FBBB_2C47_C90A)
+    let expected: UInt64 = 0xBCDE_FBBB_2C47_C90A
     #expect(result == expected, "80 bytes: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -343,7 +343,7 @@ func xxh3Reference195Bytes() throws {
     // XXH3_64bits with 195 bytes of test pattern (129-240 byte range)
     let bytes = generateTestData(length: 195)
     let result = XXH3.hash(bytes, count: 195, seed: 0)
-    let expected: Int64 = bitPattern(0xCD94_217E_E362_EC3A)
+    let expected: UInt64 = 0xCD94_217E_E362_EC3A
     #expect(result == expected, "195 bytes: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -352,7 +352,7 @@ func xxh3Reference403Bytes() throws {
     // XXH3_64bits with 403 bytes of test pattern (one block, last stripe overlapping)
     let bytes = generateTestData(length: 403)
     let result = XXH3.hash(bytes, count: 403, seed: 0)
-    let expected: Int64 = bitPattern(0xCDEB_804D_65C6_DEA4)
+    let expected: UInt64 = 0xCDEB_804D_65C6_DEA4
     #expect(result == expected, "403 bytes: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -361,7 +361,7 @@ func xxh3Reference512Bytes() throws {
     // XXH3_64bits with 512 bytes of test pattern (one block, stripe boundary)
     let bytes = generateTestData(length: 512)
     let result = XXH3.hash(bytes, count: 512, seed: 0)
-    let expected: Int64 = bitPattern(0x617E_4959_9013_CB6B)
+    let expected: UInt64 = 0x617E_4959_9013_CB6B
     #expect(result == expected, "512 bytes: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -370,7 +370,7 @@ func xxh3Reference2048Bytes() throws {
     // XXH3_64bits with 2048 bytes of test pattern (2 blocks, block boundary)
     let bytes = generateTestData(length: 2048)
     let result = XXH3.hash(bytes, count: 2048, seed: 0)
-    let expected: Int64 = bitPattern(0xDD59_E2C3_A5F0_38E0)
+    let expected: UInt64 = 0xDD59_E2C3_A5F0_38E0
     #expect(result == expected, "2048 bytes: got \(hex(result)), expected \(hex(expected))")
 }
 
@@ -383,7 +383,7 @@ func xxh3ReferenceSeed1Byte() throws {
     let bytes = generateTestData(length: 1)
     let seed: UInt64 = 0x9E37_79B1_85EB_CA8D
     let result = XXH3.hash(bytes, count: 1, seed: seed)
-    let expected: Int64 = bitPattern(0x032B_E332_DD76_6EF8)
+    let expected: UInt64 = 0x032B_E332_DD76_6EF8
     #expect(
         result == expected, "1 byte seed=PRIME64: got \(hex(result)), expected \(hex(expected))")
 }
@@ -394,7 +394,7 @@ func xxh3ReferenceSeed6Bytes() throws {
     let bytes = generateTestData(length: 6)
     let seed: UInt64 = 0x9E37_79B1_85EB_CA8D
     let result = XXH3.hash(bytes, count: 6, seed: seed)
-    let expected: Int64 = bitPattern(0x8458_9C11_6AB5_9AB9)
+    let expected: UInt64 = 0x8458_9C11_6AB5_9AB9
     #expect(
         result == expected, "6 bytes seed=PRIME64: got \(hex(result)), expected \(hex(expected))"
     )
@@ -406,7 +406,7 @@ func xxh3ReferenceSeed12Bytes() throws {
     let bytes = generateTestData(length: 12)
     let seed: UInt64 = 0x9E37_79B1_85EB_CA8D
     let result = XXH3.hash(bytes, count: 12, seed: seed)
-    let expected: Int64 = bitPattern(0xE730_3E1B_2336_DE0E)
+    let expected: UInt64 = 0xE730_3E1B_2336_DE0E
     #expect(
         result == expected,
         "12 bytes seed=PRIME64: got \(hex(result)), expected \(hex(expected))")
@@ -420,7 +420,7 @@ func xxh3ReferenceSeed2048Bytes() throws {
     let bytes = generateTestData(length: 2048)
     let seed: UInt64 = 0x9E37_79B1_85EB_CA8D
     let result = XXH3.hash(bytes, count: 2048, seed: seed)
-    let expected: Int64 = bitPattern(0x66F8_1670_669A_BABC)
+    let expected: UInt64 = 0x66F8_1670_669A_BABC
     #expect(
         result == expected,
         "2048 bytes seed=PRIME64: got \(hex(result)), expected \(hex(expected))")
@@ -433,63 +433,63 @@ func xxh3ReferenceSeed2048Bytes() throws {
 @Test func xxh3StabilityEmpty() throws {
     let bytes: [UInt8] = []
     let result = XXH3.hash(bytes, count: 0, seed: 0)
-    let expected: Int64 = bitPattern(0x2D06_8005_38D3_94C2)
+    let expected: UInt64 = 0x2D06_8005_38D3_94C2
     #expect(result == expected, "Stability: empty input changed")
 }
 
 @Test func xxh3Stability1Byte() throws {
     let bytes = generateTestData(length: 1)
     let result = XXH3.hash(bytes, count: 1, seed: 0)
-    let expected: Int64 = bitPattern(0xC44B_DFF4_074E_ECDB)
+    let expected: UInt64 = 0xC44B_DFF4_074E_ECDB
     #expect(result == expected, "Stability: 1 byte input changed")
 }
 
 @Test func xxh3Stability3Bytes() throws {
     let bytes = generateTestData(length: 3)
     let result = XXH3.hash(bytes, count: 3, seed: 0)
-    let expected: Int64 = bitPattern(0x5424_7382_A8D6_B94D)
+    let expected: UInt64 = 0x5424_7382_A8D6_B94D
     #expect(result == expected, "Stability: 3 bytes input changed")
 }
 
 @Test func xxh3Stability4Bytes() throws {
     let bytes = generateTestData(length: 4)
     let result = XXH3.hash(bytes, count: 4, seed: 0)
-    let expected: Int64 = bitPattern(0xE5DC_74BC_5184_8A51)
+    let expected: UInt64 = 0xE5DC_74BC_5184_8A51
     #expect(result == expected, "Stability: 4 bytes input changed")
 }
 
 @Test func xxh3Stability8Bytes() throws {
     let bytes = generateTestData(length: 8)
     let result = XXH3.hash(bytes, count: 8, seed: 0)
-    let expected: Int64 = bitPattern(0x24CC_C9AC_AA9F_65E4)
+    let expected: UInt64 = 0x24CC_C9AC_AA9F_65E4
     #expect(result == expected, "Stability: 8 bytes input changed")
 }
 
 @Test func xxh3Stability16Bytes() throws {
     let bytes = generateTestData(length: 16)
     let result = XXH3.hash(bytes, count: 16, seed: 0)
-    let expected: Int64 = bitPattern(0x981B_17D3_6C74_98C9)
+    let expected: UInt64 = 0x981B_17D3_6C74_98C9
     #expect(result == expected, "Stability: 16 bytes input changed")
 }
 
 @Test func xxh3Stability32Bytes() throws {
     let bytes = generateTestData(length: 32)
     let result = XXH3.hash(bytes, count: 32, seed: 0)
-    let expected: Int64 = bitPattern(0x9FEA_DDBD_BF57_EED3)
+    let expected: UInt64 = 0x9FEA_DDBD_BF57_EED3
     #expect(result == expected, "Stability: 32 bytes input changed")
 }
 
 @Test func xxh3Stability64Bytes() throws {
     let bytes = generateTestData(length: 64)
     let result = XXH3.hash(bytes, count: 64, seed: 0)
-    let expected: Int64 = bitPattern(0x9CB4_8487_720E_C49D)
+    let expected: UInt64 = 0x9CB4_8487_720E_C49D
     #expect(result == expected, "Stability: 64 bytes input changed")
 }
 
 @Test func xxh3Stability128Bytes() throws {
     let bytes = generateTestData(length: 128)
     let result = XXH3.hash(bytes, count: 128, seed: 0)
-    let expected: Int64 = bitPattern(0xFCFF_2412_6754_D861)
+    let expected: UInt64 = 0xFCFF_2412_6754_D861
     #expect(result == expected, "Stability: 128 bytes input changed")
 }
 
@@ -523,14 +523,14 @@ func xxh3ReferenceSeed2048Bytes() throws {
 @Test func xxh3StabilityWithSeed() throws {
     let bytes = generateTestData(length: 64)
     let result = XXH3.hash(bytes, count: 64, seed: 0x9E37_79B1)
-    let expected: Int64 = bitPattern(0xEC06_A164_8C27_E203)
+    let expected: UInt64 = 0xEC06_A164_8C27_E203
     #expect(result == expected, "Stability: 64 bytes with seed changed")
 }
 
 @Test func xxh3StabilityKnownStrings() throws {
     // Test with known ASCII strings for easy reproduction
     let helloResult = XXH3.hash("Hello, World!")
-    let helloExpected: Int64 = XXH3.hash("Hello, World!")
+    let helloExpected: UInt64 = XXH3.hash("Hello, World!")
     #expect(helloResult == helloExpected, "String hash should be deterministic")
 
     // Verify different strings produce different hashes
@@ -541,14 +541,9 @@ func xxh3ReferenceSeed2048Bytes() throws {
 
 // MARK: - Helpers for Reference Tests
 
-/// Convert UInt64 to Int64 using bit pattern
-private func bitPattern(_ value: UInt64) -> Int64 {
-    Int64(bitPattern: value)
-}
-
-/// Format Int64 as hex string for debugging
-private func hex(_ value: Int64) -> String {
-    String(format: "0x%016llX", UInt64(bitPattern: value))
+/// Format UInt64 as hex string for debugging
+private func hex(_ value: UInt64) -> String {
+    String(format: "0x%016llX", value)
 }
 
 // MARK: - Helper Extensions

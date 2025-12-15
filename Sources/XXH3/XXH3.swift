@@ -60,9 +60,9 @@ public enum XXH3 {
     /// - Parameters:
     ///   - bytes: The buffer to hash.
     ///   - seed: Optional seed value for the hash (default: 0).
-    /// - Returns: A 64-bit hash value suitable for modulo operations.
+    /// - Returns: A 64-bit hash value.
     @inlinable
-    public static func hash(_ bytes: some Sequence<UInt8>, seed: UInt64 = 0) -> Int64 {
+    public static func hash(_ bytes: some Sequence<UInt8>, seed: UInt64 = 0) -> UInt64 {
         let data = Array(bytes)
         return hash(data, count: data.count, seed: seed)
     }
@@ -72,9 +72,9 @@ public enum XXH3 {
     ///   - bytes: The byte array to hash.
     ///   - count: The number of bytes to hash.
     ///   - seed: Optional seed value for the hash (default: 0).
-    /// - Returns: A 64-bit hash value suitable for modulo operations.
+    /// - Returns: A 64-bit hash value.
     @inlinable
-    public static func hash(_ bytes: [UInt8], count: Int, seed: UInt64 = 0) -> Int64 {
+    public static func hash(_ bytes: [UInt8], count: Int, seed: UInt64 = 0) -> UInt64 {
         bytes.withUnsafeBufferPointer { buffer in
             guard let baseAddress = buffer.baseAddress else {
                 return hashLen0(seed: seed)
@@ -88,9 +88,9 @@ public enum XXH3 {
     ///   - bytes: Pointer to the bytes to hash.
     ///   - count: The number of bytes to hash.
     ///   - seed: Optional seed value for the hash (default: 0).
-    /// - Returns: A 64-bit hash value suitable for modulo operations.
+    /// - Returns: A 64-bit hash value.
     @inlinable
-    public static func hash(_ bytes: UnsafePointer<UInt8>, count: Int, seed: UInt64 = 0) -> Int64 {
+    public static func hash(_ bytes: UnsafePointer<UInt8>, count: Int, seed: UInt64 = 0) -> UInt64 {
         defaultSecret.withUnsafeBufferPointer { secretBuffer in
             let secret = secretBuffer.baseAddress!
             return hashDispatch(bytes, count: count, seed: seed, secret: secret)
@@ -102,9 +102,9 @@ public enum XXH3 {
     /// - Parameters:
     ///   - value: The hashable value to hash.
     ///   - seed: Optional seed value for the hash (default: 0).
-    /// - Returns: A 64-bit hash value suitable for modulo operations.
+    /// - Returns: A 64-bit hash value.
     @inlinable
-    public static func hash<T: Hashable>(_ value: T, seed: UInt64 = 0) -> Int64 {
+    public static func hash<T: Hashable>(_ value: T, seed: UInt64 = 0) -> UInt64 {
         var hasher = Hasher()
         hasher.combine(value)
         let hashValue = hasher.finalize()
@@ -116,9 +116,9 @@ public enum XXH3 {
     /// - Parameters:
     ///   - value: The integer value to hash.
     ///   - seed: Optional seed value for the hash (default: 0).
-    /// - Returns: A 64-bit hash value suitable for modulo operations.
+    /// - Returns: A 64-bit hash value.
     @inlinable
-    public static func hash(_ value: Int, seed: UInt64 = 0) -> Int64 {
+    public static func hash(_ value: Int, seed: UInt64 = 0) -> UInt64 {
         withUnsafeBytes(of: value.littleEndian) { buffer in
             let bytes = buffer.bindMemory(to: UInt8.self)
             return hash(bytes.baseAddress!, count: 8, seed: seed)
@@ -129,9 +129,9 @@ public enum XXH3 {
     /// - Parameters:
     ///   - string: The string to hash.
     ///   - seed: Optional seed value for the hash (default: 0).
-    /// - Returns: A 64-bit hash value suitable for modulo operations.
+    /// - Returns: A 64-bit hash value.
     @inlinable
-    public static func hash(_ string: String, seed: UInt64 = 0) -> Int64 {
+    public static func hash(_ string: String, seed: UInt64 = 0) -> UInt64 {
         var string = string
         return string.withUTF8 { buffer in
             guard let baseAddress = buffer.baseAddress else {
@@ -150,7 +150,7 @@ public enum XXH3 {
         count: Int,
         seed: UInt64,
         secret: UnsafePointer<UInt8>
-    ) -> Int64 {
+    ) -> UInt64 {
         if count <= 16 {
             return hashLen0to16(input, count: count, seed: seed, secret: secret)
         } else if count <= 128 {
@@ -166,12 +166,12 @@ public enum XXH3 {
 
     @inlinable
     @inline(__always)
-    static func hashLen0(seed: UInt64) -> Int64 {
+    static func hashLen0(seed: UInt64) -> UInt64 {
         defaultSecret.withUnsafeBufferPointer { secretBuffer in
             let secret = secretBuffer.baseAddress!
             let secretLow = readLE64(secret.advanced(by: 56))
             let secretHigh = readLE64(secret.advanced(by: 64))
-            return Int64(bitPattern: xxh64Avalanche(seed ^ secretLow ^ secretHigh))
+            return xxh64Avalanche(seed ^ secretLow ^ secretHigh)
         }
     }
 
@@ -184,11 +184,11 @@ public enum XXH3 {
         count: Int,
         seed: UInt64,
         secret: UnsafePointer<UInt8>
-    ) -> Int64 {
+    ) -> UInt64 {
         if count == 0 {
             let secretLow = readLE64(secret.advanced(by: 56))
             let secretHigh = readLE64(secret.advanced(by: 64))
-            return Int64(bitPattern: xxh64Avalanche(seed ^ secretLow ^ secretHigh))
+            return xxh64Avalanche(seed ^ secretLow ^ secretHigh)
         } else if count <= 3 {
             return hashLen1to3(input, count: count, seed: seed, secret: secret)
         } else if count <= 8 {
@@ -205,14 +205,14 @@ public enum XXH3 {
         count: Int,
         seed: UInt64,
         secret: UnsafePointer<UInt8>
-    ) -> Int64 {
+    ) -> UInt64 {
         let c1 = UInt32(input[0])
         let c2 = UInt32(input[count >> 1])
         let c3 = UInt32(input[count - 1])
         let combined = (c1 << 16) | (c2 << 24) | (c3 << 0) | (UInt32(count) << 8)
         let bitflip = UInt64(readLE32(secret) ^ readLE32(secret.advanced(by: 4))) &+ seed
         let keyed = UInt64(combined) ^ bitflip
-        return Int64(bitPattern: xxh64Avalanche(keyed))
+        return xxh64Avalanche(keyed)
     }
 
     @inlinable
@@ -222,7 +222,7 @@ public enum XXH3 {
         count: Int,
         seed: UInt64,
         secret: UnsafePointer<UInt8>
-    ) -> Int64 {
+    ) -> UInt64 {
         // Important: seed must be modified by XORing with its byteswapped lower 32 bits shifted left
         let seed = seed ^ (UInt64(byteSwap32(UInt32(truncatingIfNeeded: seed))) << 32)
         let inputLo = UInt64(readLE32(input))
@@ -230,7 +230,7 @@ public enum XXH3 {
         let input64 = inputHi &+ (inputLo << 32)
         let bitflip = (readLE64(secret.advanced(by: 8)) ^ readLE64(secret.advanced(by: 16))) &- seed
         let keyed = input64 ^ bitflip
-        return Int64(bitPattern: rrmxmx(keyed, len: UInt64(count)))
+        return rrmxmx(keyed, len: UInt64(count))
     }
 
     @inlinable
@@ -240,7 +240,7 @@ public enum XXH3 {
         count: Int,
         seed: UInt64,
         secret: UnsafePointer<UInt8>
-    ) -> Int64 {
+    ) -> UInt64 {
         let bitflip1 =
             (readLE64(secret.advanced(by: 24)) ^ readLE64(secret.advanced(by: 32))) &+ seed
         let bitflip2 =
@@ -251,7 +251,7 @@ public enum XXH3 {
             UInt64(count)
             &+ byteSwap64(inputLow) &+ inputHigh
             &+ mul128Fold64(inputLow, inputHigh)
-        return Int64(bitPattern: avalanche(acc))
+        return avalanche(acc)
     }
 
     // MARK: - Length 17-128
@@ -262,7 +262,7 @@ public enum XXH3 {
         count: Int,
         seed: UInt64,
         secret: UnsafePointer<UInt8>
-    ) -> Int64 {
+    ) -> UInt64 {
         var acc = UInt64(count) &* prime64_1
 
         if count > 32 {
@@ -285,7 +285,7 @@ public enum XXH3 {
         acc &+= mix16B(input, secret: secret, seed: seed)
         acc &+= mix16B(input.advanced(by: count - 16), secret: secret.advanced(by: 16), seed: seed)
 
-        return Int64(bitPattern: avalanche(acc))
+        return avalanche(acc)
     }
 
     // MARK: - Length 129-240
@@ -296,7 +296,7 @@ public enum XXH3 {
         count: Int,
         seed: UInt64,
         secret: UnsafePointer<UInt8>
-    ) -> Int64 {
+    ) -> UInt64 {
         var acc = UInt64(count) &* prime64_1
 
         // First 128 bytes: 8 rounds of 16 bytes
@@ -328,7 +328,7 @@ public enum XXH3 {
             seed: seed
         )
 
-        return Int64(bitPattern: avalanche(acc))
+        return avalanche(acc)
     }
 
     // MARK: - Long Input (> 240 bytes)
@@ -339,7 +339,7 @@ public enum XXH3 {
         count: Int,
         seed: UInt64,
         secret: UnsafePointer<UInt8>
-    ) -> Int64 {
+    ) -> UInt64 {
         var acc0 = UInt64(prime32_3)
         var acc1 = prime64_1
         var acc2 = prime64_2
@@ -390,12 +390,10 @@ public enum XXH3 {
             stripe: lastStripePtr, secret: secret.advanced(by: lastStripeSecretOffset))
 
         // Merge accumulators
-        let result = mergeAccs(
+        return mergeAccs(
             acc0, acc1, acc2, acc3, acc4, acc5, acc6, acc7,
             secret: secret.advanced(by: secretMergeAccsStart),
             start: UInt64(count) &* prime64_1)
-
-        return Int64(bitPattern: result)
     }
 
     // MARK: - Accumulator Operations
