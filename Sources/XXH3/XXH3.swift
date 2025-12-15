@@ -628,5 +628,3 @@ public enum XXH3 {
         UnsafeRawPointer(ptr).loadUnaligned(as: UInt32.self).littleEndian
     }
 }
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
