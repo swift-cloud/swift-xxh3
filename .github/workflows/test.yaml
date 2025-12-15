@@ -6,7 +6,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: swift:6.2.3
+
     steps:
       - uses: actions/checkout@v4
+
       - run: swift --version
+
       - run: swift test
