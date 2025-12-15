@@ -169,7 +169,7 @@ Benchmarks comparing XXH3 to Swift's built-in `Hasher` (using [package-benchmark
 | 1 KB | ~27 GB/s |
 | 1 MB | ~27 GB/s |
 
-*Benchmarks run on Apple M3 Max. Run `swift package benchmark` to reproduce.*
+*Benchmarks run on Apple M4 Pro. Run `swift package benchmark` to reproduce.*
 
 ## Algorithm Details
 
