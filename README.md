@@ -20,7 +20,7 @@ Add XXH3 to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/AndrewBarba/xxh3", from: "1.0.0")
+    .package(url: "https://github.com/swift-cloud/swift-xxh3", from: "1.0.0")
 ]
 ```
 
@@ -29,7 +29,9 @@ Then add it to your target dependencies:
 ```swift
 .target(
     name: "YourTarget",
-    dependencies: ["XXH3"]
+    dependencies: [
+        .product(name: "XXH3", package: "swift-xxh3"),
+    ]
 )
 ```
 
