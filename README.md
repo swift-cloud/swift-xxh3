@@ -44,14 +44,10 @@ import XXH3
 
 // Hash a byte array
 let bytes: [UInt8] = [0x01, 0x02, 0x03, 0x04]
-let hash = XXH3.hash(bytes, count: bytes.count)
+let hash = XXH3.hash(bytes)
 
 // Hash with a seed
-let seededHash = XXH3.hash(bytes, count: bytes.count, seed: 42)
-
-// Hash any Sequence of UInt8
-let data: Data = ...
-let dataHash = XXH3.hash(data)
+let seededHash = XXH3.hash(bytes, seed: 42)
 ```
 
 ### Hashing Strings
