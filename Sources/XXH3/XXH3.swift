@@ -56,17 +56,6 @@ public enum XXH3 {
 
     // MARK: - Public API
 
-    /// Computes a fast 64-bit hash of the given bytes.
-    /// - Parameters:
-    ///   - bytes: The buffer to hash.
-    ///   - seed: Optional seed value for the hash (default: 0).
-    /// - Returns: A 64-bit hash value.
-    @inlinable
-    public static func hash(_ bytes: some Sequence<UInt8>, seed: UInt64 = 0) -> UInt64 {
-        let data = Array(bytes)
-        return hash(data, count: data.count, seed: seed)
-    }
-
     /// Computes a fast 64-bit hash of the given byte array.
     /// - Parameters:
     ///   - bytes: The byte array to hash.
@@ -74,12 +63,12 @@ public enum XXH3 {
     ///   - seed: Optional seed value for the hash (default: 0).
     /// - Returns: A 64-bit hash value.
     @inlinable
-    public static func hash(_ bytes: [UInt8], count: Int, seed: UInt64 = 0) -> UInt64 {
+    public static func hash(_ bytes: [UInt8], seed: UInt64 = 0) -> UInt64 {
         bytes.withUnsafeBufferPointer { buffer in
             guard let baseAddress = buffer.baseAddress else {
                 return hashLen0(seed: seed)
             }
-            return hash(baseAddress, count: count, seed: seed)
+            return hash(baseAddress, count: bytes.count, seed: seed)
         }
     }
 
