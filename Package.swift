@@ -13,9 +13,6 @@ let package = Package(
     products: [
         .library(name: "XXH3", targets: ["XXH3"])
     ],
-    dependencies: [
-        .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0")
-    ],
     targets: [
         .target(
             name: "XXH3"
@@ -24,17 +21,6 @@ let package = Package(
             name: "XXH3Tests",
             dependencies: [
                 "XXH3"
-            ]
-        ),
-        .executableTarget(
-            name: "XXH3Benchmarks",
-            dependencies: [
-                "XXH3",
-                .product(name: "Benchmark", package: "package-benchmark"),
-            ],
-            path: "Benchmarks/XXH3Benchmarks",
-            plugins: [
-                .plugin(name: "BenchmarkPlugin", package: "package-benchmark")
             ]
         ),
     ]
